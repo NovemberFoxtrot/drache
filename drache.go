@@ -89,6 +89,8 @@ func (o *out) unknown() {
 }
 
 func main() {
+	home, err := os.Getwd()
+
 	var path = flag.String("d", ".", "path")
 	var quiet = flag.Bool("q", false, "quiet mode")
 	var verbose = flag.Bool("v", false, "verbose mode")
@@ -96,7 +98,7 @@ func main() {
 
 	flag.Parse()
 
-	fmt.Println(*path, *quiet, *verbose, *environment)
+	fmt.Println(home, *path, *quiet, *verbose, *environment)
 
 	input, err := ioutil.ReadFile("layout.json")
 
@@ -106,12 +108,23 @@ func main() {
 
 	fmt.Println(string(input))
 
-	type layouter interface{}
+	type Entries struct {
+		Servers    map[string][]string `json:"servers"`
+		Attributes int                 `json:"attributes"`
+	}
 
-	var f interface{}
-	json.Unmarshal(input, &f)
+	var e map[string]Entries
 
-	fmt.Println(f)
+	json.Unmarshal(input, &e)
+
+	fmt.Println(e["production"])
+
+	for k, v := range e["production"].Servers {
+		fmt.Println(k)
+		for _, v1 := range v {
+			fmt.Println("\t", v1)
+		}
+	}
 
 	// $home = Dir.pwd
 

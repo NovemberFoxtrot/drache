@@ -1,8 +1,16 @@
 {
   "production": {
     "servers": {
-      "db-1": ["cassandra", "redis", "cdb"],
-      "db-2": ["cassandra"]
+      "db-1": ["cassandra", "cdb"],
+      "db-2": ["redis"]
+    }
+  },
+  "staging": {
+    "servers": {
+      "sta1": ["redis", "erb"]
+    },
+    "attributes": {
+      "exit_code": 0
     }
   }
 }
