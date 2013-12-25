@@ -1,7 +1,10 @@
 package main
 
 import (
+	"encoding/json"
+	"flag"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"strings"
 )
@@ -48,12 +51,6 @@ func ssh(server, script string) {
 
 /*
 commands = Clap.run ARGV,
-  "-q" => lambda {
-    $verbosity = 0
-  },
-  "-v" => lambda {
-    $verbosity = 2
-  },
   "-d" => lambda {|path|
     $home = File.join(Dir.pwd, path)
   }
@@ -92,6 +89,30 @@ func (o *out) unknown() {
 }
 
 func main() {
+	var path = flag.String("d", ".", "path")
+	var quiet = flag.Bool("q", false, "quiet mode")
+	var verbose = flag.Bool("v", false, "verbose mode")
+	var environment = flag.String("e", "development", "environment")
+
+	flag.Parse()
+
+	fmt.Println(*path, *quiet, *verbose, *environment)
+
+	input, err := ioutil.ReadFile("layout.json")
+
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	fmt.Println(string(input))
+
+	type layouter interface{}
+
+	var f interface{}
+	json.Unmarshal(input, &f)
+
+	fmt.Println(f)
+
 	// $home = Dir.pwd
 
 	switch os.Args[1] {
@@ -99,7 +120,10 @@ func main() {
 		command := os.Args[2]
 
 		environment := strings.Split(os.Args[3], ":")[0]
-		servers := strings.Split(os.Args[3], ":")[1]
+
+		servers := ""
+
+		servers = strings.Split(os.Args[3], ":")[1]
 
 		fmt.Println(command, environment, servers)
 	}
