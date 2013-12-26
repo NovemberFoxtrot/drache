@@ -1,17 +1,19 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"flag"
 	"fmt"
+	_ "io"
 	"io/ioutil"
 	"os"
+	"os/exec"
 	"path"
 	"strings"
 )
 
 type Template struct {
-	// attr_accessor :attributes
 	source     string
 	attributes map[string]interface{}
 }
@@ -58,9 +60,27 @@ func telnet() {
 	// uses telnet
 }
 
-func ssh(server, script string) {
+func ssh(server, script string) (string, int) {
+	cmd := exec.Command(script[:len(script)-1]) // TODO
+
+	var stderrb bytes.Buffer
+	var stdoutb bytes.Buffer
+
+	cmd.Stdout = &stdoutb
+	cmd.Stderr = &stderrb
+	err := cmd.Run()
+
+	if err != nil {
+		fmt.Println(err)
+		return "Errrrrr", 1
+	}
+
+	fmt.Println("stdout", stdoutb.String(), "stderr", stderrb.String(), "err", err)
+
 	// out, status = Open3.capture2e("ssh -T -F #{path("ssh_config")} #{server}", :stdin_data => script)
-	// [out, status.exitstatus]
+	// return out, status.exitstatus
+
+	return "", 0
 }
 
 /*
@@ -102,7 +122,7 @@ func (o *out) unknown() {
 	fmt.Print("?")
 }
 
-var	home string
+var home string
 
 func init() {
 	home, err := os.Getwd()
