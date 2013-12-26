@@ -6,24 +6,23 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"path"
 	"strings"
 )
 
 type Template struct {
 	// attr_accessor :attributes
-	source string
+	source     string
+	attributes map[string]interface{}
 }
 
 func (t *Template) initialize(source string) {
 	t.source = source
 }
 
-func (t *Template) render() {
+func (t *Template) render() string {
 	// ERB.new(t.source).result(binding)
-}
-
-func path( /* *parts */) {
-	// File.join($home, *parts)
+	return t.source
 }
 
 func layout() {
@@ -31,16 +30,24 @@ func layout() {
 }
 
 func run(server, recipe, command string, attributes map[string]interface{}) (string, int) {
-	// template_path = path("recipes", recipe, "#{command}.erb")
+	template_path := path.Join(home, "recipe", recipe, command)
 
-	// if File.exists?(template_path)
-	//  source = File.read(template_path)
-	//  template = Template.new(source)
-	//  template.attributes = attributes
-	//  ssh(server, template.render)
-	// end
+	if _, err := os.Stat(template_path); os.IsNotExist(err) {
+		return "unable to locate: " + template_path, 1
+	}
 
-	return "temp", 0
+	source, err := ioutil.ReadFile(template_path)
+
+	if err != nil {
+		return "unable to read file: " + template_path, 1
+	}
+
+	template := new(Template)
+	template.source = string(source)
+	template.attributes = attributes
+	ssh(server, template.render())
+
+	return "", 0
 }
 
 func local() {
@@ -72,40 +79,51 @@ type out struct {
 }
 
 func (o *out) server( /* name */) {
-	fmt.Println("" /* name */)
+	fmt.Print("" /* name */)
 }
 
 func (o *out) error() {
-	fmt.Println("\033[01;31mERROR\033[00m")
+	fmt.Print("\033[01;31mERROR\033[00m")
 }
 
 func (o *out) ok() {
-	fmt.Println("\033[01;32mOK\033[00m")
+	fmt.Print("\033[01;32mOK\033[00m")
 }
 
 func (o *out) missing() {
-	fmt.Println("\033[01;33mMISSING\033[00m")
+	fmt.Print("\033[01;33mMISSING\033[00m")
 }
 
 func (o *out) done() {
-	fmt.Println("\033[01;32mDONE\033[00m")
+	fmt.Print("\033[01;32mDONE\033[00m")
 }
 
 func (o *out) unknown() {
-	fmt.Println("?")
+	fmt.Print("?")
+}
+
+var	home string
+
+func init() {
+	home, err := os.Getwd()
+
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+
+	fmt.Println(home)
 }
 
 func main() {
-	home, err := os.Getwd()
-
-	var path = flag.String("d", ".", "path")
+	var directory = flag.String("d", ".", "directory")
 	var quiet = flag.Bool("q", false, "quiet mode")
 	var verbose = flag.Bool("v", false, "verbose mode")
 	var environment = flag.String("e", "development", "environment")
 
 	flag.Parse()
 
-	fmt.Println(home, *path, *quiet, *verbose, *environment)
+	fmt.Println(home, *directory, *quiet, *verbose, *environment)
 
 	input, err := ioutil.ReadFile("layout.json")
 
@@ -165,7 +183,7 @@ func main() {
 			for _, recipe := range recipes {
 				fmt.Printf("  %s: ", recipe)
 
-				filename := home + "/recipe/" + recipe
+				filename := path.Join(home, "recipe", recipe)
 
 				if _, err := os.Stat(filename); os.IsNotExist(err) {
 					fmt.Printf("unable to locate: %s\n", filename)
@@ -177,15 +195,18 @@ func main() {
 				switch status {
 				case -1: // nil
 					o.unknown()
+					if len(stdout) > 0 {
+						fmt.Fprintf(os.Stderr, " %s\n", stdout)
+					}
 				case 0:
 					o.ok()
-					if *verbose == true {
-						fmt.Fprintf(os.Stderr, "%s\n", stdout)
+					if len(stdout) > 0 {
+						fmt.Fprintf(os.Stderr, " %s\n", stdout)
 					}
 				default:
 					o.error()
-					if *verbose == true {
-						fmt.Fprintf(os.Stderr, "%s\n", stdout)
+					if len(stdout) > 0 {
+						fmt.Fprintf(os.Stderr, " %s\n", stdout)
 					}
 					exit_status = 1
 					break
