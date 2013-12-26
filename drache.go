@@ -106,27 +106,14 @@ func main() {
 		fmt.Println(err)
 	}
 
-	fmt.Println(string(input))
-
 	type Entries struct {
-		Servers    map[string][]string `json:"servers"`
-		Attributes int                 `json:"attributes"`
+		Servers    map[string][]string    `json:"servers"`
+		Attributes map[string]interface{} `json:"attributes"`
 	}
 
 	var e map[string]Entries
 
 	json.Unmarshal(input, &e)
-
-	fmt.Println(e["production"])
-
-	for k, v := range e["production"].Servers {
-		fmt.Println(k)
-		for _, v1 := range v {
-			fmt.Println("\t", v1)
-		}
-	}
-
-	// $home = Dir.pwd
 
 	switch os.Args[1] {
 	case "run":
@@ -134,11 +121,29 @@ func main() {
 
 		environment := strings.Split(os.Args[3], ":")[0]
 
-		servers := ""
+		server := ""
 
-		servers = strings.Split(os.Args[3], ":")[1]
+		if len(strings.Split(os.Args[3], ":")) > 1 {
+			server = strings.Split(os.Args[3], ":")[1]
+		}
 
-		fmt.Println(command, environment, servers)
+		layout := e[environment]
+
+		var servers []string
+
+		if len(strings.Split(server, ",")) > 1 {
+			for _, v := range strings.Split(server, ",") {
+				servers = append(servers, v)
+			}
+		} else {
+			for k, _ := range layout.Servers {
+				servers = append(servers, k)
+			}
+		}
+
+		exit_status := 0
+
+		fmt.Println(command, environment, server, layout, servers, exit_status)
 	}
 
 	/*
