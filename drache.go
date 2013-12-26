@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	_ "io"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -44,9 +43,7 @@ func run(server, recipe, command string, attributes map[string]interface{}) (str
 		return "unable to read file: " + template_path, 1
 	}
 
-	template := new(Template)
-	template.source = string(source)
-	template.attributes = attributes
+	template := &Template{source: string(source), attributes: attributes}
 	ssh(server, template.render())
 
 	return "", 0
@@ -127,11 +124,10 @@ func main() {
 	var directory = flag.String("d", ".", "directory") // recipe / layout.json root
 	var quiet = flag.Bool("q", false, "quiet mode")
 	var verbose = flag.Bool("v", false, "verbose mode")
-	var environment = flag.String("e", "development", "environment")
 
 	flag.Parse()
 
-	fmt.Println(home, *directory, *quiet, *verbose, *environment)
+	fmt.Println(home, *directory, *quiet, *verbose)
 
 	input, err := ioutil.ReadFile("layout.json")
 
@@ -148,79 +144,81 @@ func main() {
 
 	json.Unmarshal(input, &e)
 
-	switch os.Args[1] {
-	case "run":
-		command := os.Args[2]
-
-		environment := strings.Split(os.Args[3], ":")[0]
-
-		server := ""
-
-		if len(strings.Split(os.Args[3], ":")) > 1 {
-			server = strings.Split(os.Args[3], ":")[1]
-		}
-
-		layout := e[environment]
-
-		var servers []string
-
-		if len(strings.Split(server, ",")) > 1 {
-			for _, v := range strings.Split(server, ",") {
-				servers = append(servers, v)
-			}
-		} else {
-			for k, _ := range layout.Servers {
-				servers = append(servers, k)
-			}
-		}
-
-		attributes := layout.Attributes
-
-		exit_status := 0
-
-		fmt.Println(command, environment, server, layout, servers, attributes, exit_status)
-
-		for _, v := range servers {
-			recipes := layout.Servers[v]
-
-			o := new(out)
-
-			o.server()
-			fmt.Println(v)
-
-			for _, recipe := range recipes {
-				fmt.Printf("  %s: ", recipe)
-
-				filename := path.Join(home, "recipe", recipe)
-
-				if _, err := os.Stat(filename); os.IsNotExist(err) {
-					fmt.Printf("unable to locate: %s\n", filename)
-					os.Exit(1)
-				}
-
-				stdout, status := run(server, recipe, command, attributes)
-
-				switch status {
-				case -1: // nil
-					o.unknown()
-					if len(stdout) > 0 {
-						fmt.Fprintf(os.Stderr, " %s\n", stdout)
-					}
-				case 0:
-					o.ok()
-					if len(stdout) > 0 {
-						fmt.Fprintf(os.Stderr, " %s\n", stdout)
-					}
-				default:
-					o.error()
-					if len(stdout) > 0 {
-						fmt.Fprintf(os.Stderr, " %s\n", stdout)
-					}
-					exit_status = 1
-					break
-				}
-			}
-		}
-		os.Exit(exit_status)
+	if os.Args[1] != "run" {
+		fmt.Println("unknown usage")
+		os.Exit(1)
 	}
+
+	command := os.Args[2]
+
+	environment := strings.Split(os.Args[3], ":")[0]
+
+	server := ""
+
+	if len(strings.Split(os.Args[3], ":")) > 1 {
+		server = strings.Split(os.Args[3], ":")[1]
+	}
+
+	layout := e[environment]
+
+	var servers []string
+
+	if len(strings.Split(server, ",")) > 1 {
+		for _, v := range strings.Split(server, ",") {
+			servers = append(servers, v)
+		}
+	} else {
+		for k, _ := range layout.Servers {
+			servers = append(servers, k)
+		}
+	}
+
+	attributes := layout.Attributes
+
+	exit_status := 0
+
+	fmt.Println(command, environment, server, layout, servers, attributes, exit_status)
+
+	for _, v := range servers {
+		recipes := layout.Servers[v]
+
+		o := new(out)
+
+		o.server()
+		fmt.Println(v)
+
+		for _, recipe := range recipes {
+			fmt.Printf("  %s: ", recipe)
+
+			filename := path.Join(home, "recipe", recipe)
+
+			if _, err := os.Stat(filename); os.IsNotExist(err) {
+				fmt.Printf("unable to locate: %s\n", filename)
+				os.Exit(1)
+			}
+
+			stdout, status := run(server, recipe, command, attributes)
+
+			switch status {
+			case -1: // nil
+				o.unknown()
+				if len(stdout) > 0 {
+					fmt.Fprintf(os.Stderr, " %s\n", stdout)
+				}
+			case 0:
+				o.ok()
+				if len(stdout) > 0 {
+					fmt.Fprintf(os.Stderr, " %s\n", stdout)
+				}
+			default:
+				o.error()
+				if len(stdout) > 0 {
+					fmt.Fprintf(os.Stderr, " %s\n", stdout)
+				}
+				exit_status = 1
+				break
+			}
+		}
+	}
+	os.Exit(exit_status)
 }
