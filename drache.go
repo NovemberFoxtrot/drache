@@ -100,30 +100,6 @@ type out struct {
 	name string
 }
 
-func (o *out) server() {
-	fmt.Print(o.name)
-}
-
-func (o *out) error() {
-	fmt.Print("\033[01;31mERROR\033[00m")
-}
-
-func (o *out) ok() {
-	fmt.Print("\033[01;32mOK\033[00m")
-}
-
-func (o *out) missing() {
-	fmt.Print("\033[01;33mMISSING\033[00m")
-}
-
-func (o *out) done() {
-	fmt.Print("\033[01;32mDONE\033[00m")
-}
-
-func (o *out) unknown() {
-	fmt.Print("?")
-}
-
 var home string
 
 func init() {
@@ -138,6 +114,9 @@ func init() {
 }
 
 func main() {
+	fmt.Print("\033[01;33mMISSING\033[00m")
+	fmt.Print("\033[01;32mDONE\033[00m")
+
 	var directory = flag.String("d", ".", "directory") // recipe / layout.json root
 	var quiet = flag.Bool("q", false, "quiet mode")
 	var verbose = flag.Bool("v", false, "verbose mode")
@@ -186,9 +165,7 @@ func main() {
 	for _, v := range servers {
 		recipes := layout.Servers[v]
 
-		o := &out{name:v}
-
-		o.server()
+		fmt.Print(v)
 
 		for _, recipe := range recipes {
 			fmt.Printf("  %s: ", recipe)
@@ -203,23 +180,19 @@ func main() {
 			stdout, status := run(server, recipe, command, attributes)
 
 			switch status {
-			case -1: // nil
-				o.unknown()
-				if len(stdout) > 0 {
-					fmt.Fprintf(os.Stderr, " %s\n", stdout)
-				}
+			case -1: // nil is better? negative error codes?
+				fmt.Print("?")
 			case 0:
-				o.ok()
-				if len(stdout) > 0 {
-					fmt.Fprintf(os.Stderr, " %s\n", stdout)
-				}
+				fmt.Print("\033[01;32mOK\033[00m")
 			default:
-				o.error()
-				if len(stdout) > 0 {
-					fmt.Fprintf(os.Stderr, " %s\n", stdout)
-				}
+				fmt.Print("\033[01;31mERROR\033[00m")
 				exit_status = 1
 				break
+			}
+
+			// TODO setup verbose levels
+			if len(stdout) > 0 {
+				fmt.Fprintf(os.Stderr, " %s\n", stdout)
 			}
 		}
 	}
