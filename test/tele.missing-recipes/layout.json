@@ -1,0 +1,7 @@
+{
+  "production": {
+    "servers": {
+      "db-1": ["redis", "cassandra"]
+    }
+  }
+}
