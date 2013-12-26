@@ -26,8 +26,23 @@ func (t *Template) render() string {
 	return t.source
 }
 
-func layout() {
-	// @layout ||= JSON.parse(File.read(path("layout.json")))
+type Entries struct {
+	Servers    map[string][]string    `json:"servers"`
+	Attributes map[string]interface{} `json:"attributes"`
+}
+
+func layout() map[string]Entries {
+	input, err := ioutil.ReadFile(path.Join(home, "layout.json"))
+
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	var e map[string]Entries
+
+	json.Unmarshal(input, &e)
+
+	return e
 }
 
 func run(server, recipe, command string, attributes map[string]interface{}) (string, int) {
@@ -65,6 +80,7 @@ func ssh(server, script string) (string, int) {
 
 	cmd.Stdout = &stdoutb
 	cmd.Stderr = &stderrb
+
 	err := cmd.Run()
 
 	if err != nil {
@@ -81,10 +97,11 @@ func ssh(server, script string) (string, int) {
 }
 
 type out struct {
+	name string
 }
 
-func (o *out) server( /* name */) {
-	fmt.Print("" /* name */)
+func (o *out) server() {
+	fmt.Print(o.name)
 }
 
 func (o *out) error() {
@@ -129,20 +146,7 @@ func main() {
 
 	fmt.Println(home, *directory, *quiet, *verbose)
 
-	input, err := ioutil.ReadFile("layout.json")
-
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	type Entries struct {
-		Servers    map[string][]string    `json:"servers"`
-		Attributes map[string]interface{} `json:"attributes"`
-	}
-
-	var e map[string]Entries
-
-	json.Unmarshal(input, &e)
+	e := layout()
 
 	if os.Args[1] != "run" {
 		fmt.Println("unknown usage")
@@ -182,10 +186,9 @@ func main() {
 	for _, v := range servers {
 		recipes := layout.Servers[v]
 
-		o := new(out)
+		o := &out{name:v}
 
 		o.server()
-		fmt.Println(v)
 
 		for _, recipe := range recipes {
 			fmt.Printf("  %s: ", recipe)
@@ -220,5 +223,6 @@ func main() {
 			}
 		}
 	}
+
 	os.Exit(exit_status)
 }
