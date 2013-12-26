@@ -30,7 +30,7 @@ func layout() {
 	// @layout ||= JSON.parse(File.read(path("layout.json")))
 }
 
-func run( /* server, recipe, command, attributes */ /* ={} */) {
+func run(server, recipe, command string, attributes map[string]interface{}) (string, int) {
 	// template_path = path("recipes", recipe, "#{command}.erb")
 
 	// if File.exists?(template_path)
@@ -39,9 +39,16 @@ func run( /* server, recipe, command, attributes */ /* ={} */) {
 	//  template.attributes = attributes
 	//  ssh(server, template.render)
 	// end
+
+	return "temp", 0
+}
+
+func local() {
+	// runs recipe locally
 }
 
 func telnet() {
+	// uses telnet
 }
 
 func ssh(server, script string) {
@@ -141,60 +148,50 @@ func main() {
 			}
 		}
 
+		attributes := layout.Attributes
+
 		exit_status := 0
 
-		fmt.Println(command, environment, server, layout, servers, exit_status)
+		fmt.Println(command, environment, server, layout, servers, attributes, exit_status)
+
+		for _, v := range servers {
+			recipes := layout.Servers[v]
+
+			o := new(out)
+
+			o.server()
+			fmt.Println(v)
+
+			for _, recipe := range recipes {
+				fmt.Printf("  %s: ", recipe)
+
+				filename := home + "/recipe/" + recipe
+
+				if _, err := os.Stat(filename); os.IsNotExist(err) {
+					fmt.Printf("unable to locate: %s\n", filename)
+					os.Exit(1)
+				}
+
+				stdout, status := run(server, recipe, command, attributes)
+
+				switch status {
+				case -1: // nil
+					o.unknown()
+				case 0:
+					o.ok()
+					if *verbose == true {
+						fmt.Fprintf(os.Stderr, "%s\n", stdout)
+					}
+				default:
+					o.error()
+					if *verbose == true {
+						fmt.Fprintf(os.Stderr, "%s\n", stdout)
+					}
+					exit_status = 1
+					break
+				}
+			}
+		}
+		os.Exit(exit_status)
 	}
-
-	/*
-	   case ARGV.shift
-	   when "run" then
-	     command = ARGV.shift
-	     environment, servers = ARGV.shift.split(":")
-
-	     environment = layout[environment]
-
-	     servers = if servers
-	                 servers.split(",")
-	               else
-	                 environment["servers"].keys
-	               end
-
-	     attributes = environment["attributes"] || {}
-
-	     exit_status = 0
-
-	     servers.each do |server|
-	       recipes = environment["servers"][server]
-
-	       out.server(server)
-
-	       recipes.each do |recipe|
-	         print "  #{recipe}: "
-
-	         if File.exists?(path("recipes", recipe))
-	           stdout, status = run(server, recipe, command, attributes)
-
-	           case status
-	           when nil
-	             out.unknown
-	           when 0
-	             out.ok
-	             $stderr.print stdout if $verbosity >= 2
-	           else
-	             out.error
-	             $stderr.print stdout if $verbosity >= 1
-	             exit_status = 1
-	             break
-	           end
-	         else
-	           out.unknown
-	           exit 1
-	         end
-	       end
-	     end
-
-	     exit exit_status
-	   end
-	*/
 }
