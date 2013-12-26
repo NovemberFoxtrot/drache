@@ -83,18 +83,6 @@ func ssh(server, script string) (string, int) {
 	return "", 0
 }
 
-/*
-commands = Clap.run ARGV,
-  "-d" => lambda {|path|
-    $home = File.join(Dir.pwd, path)
-  }
-
-unless File.exists?(path("layout.json"))
-  $stderr.puts "Couldn't find `layout.json`"
-  exit 1
-end
-*/
-
 type out struct {
 }
 
@@ -136,7 +124,7 @@ func init() {
 }
 
 func main() {
-	var directory = flag.String("d", ".", "directory")
+	var directory = flag.String("d", ".", "directory") // recipe / layout.json root
 	var quiet = flag.Bool("q", false, "quiet mode")
 	var verbose = flag.Bool("v", false, "verbose mode")
 	var environment = flag.String("e", "development", "environment")
