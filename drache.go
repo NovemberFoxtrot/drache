@@ -87,6 +87,8 @@ func (b *Book) run() {
 	jsonstruct := b.layout()
 	layout := jsonstruct[b.environment]
 
+	// TODO abort if layout does not parse
+
 	for server, _ := range layout.Servers {
 		recipes := layout.Servers[server]
 
