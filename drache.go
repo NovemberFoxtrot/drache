@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bytes"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -9,7 +8,6 @@ import (
 	"os"
 	"os/exec"
 	"path"
-	"strings"
 )
 
 type Template struct {
@@ -22,30 +20,30 @@ func (t *Template) render() string {
 	return t.source
 }
 
-type Entries struct {
+type Layout struct {
 	Attributes map[string]interface{} `json:"attributes"`
 	Servers    map[string][]string    `json:"servers"`
 }
 
-func layout() map[string]Entries {
-	input, err := ioutil.ReadFile(path.Join(home, "layout.json"))
+func layout(directory string) map[string]Layout {
+	input, err := ioutil.ReadFile(path.Join(directory, "layout.json"))
 
 	if err != nil {
 		fmt.Println(err)
 	}
 
-	var e map[string]Entries
+	var e map[string]Layout
 
 	json.Unmarshal(input, &e)
 
 	return e
 }
 
-func run(server, recipe, command string, attributes map[string]interface{}) (string, int) {
-	template_path := path.Join(home, "recipe", recipe, command)
+func run(directory, server, recipe, command string, attributes map[string]interface{}) (string, int) {
+	template_path := path.Join(directory, "recipe", recipe, command)
 
 	if _, err := os.Stat(template_path); os.IsNotExist(err) {
-		fmt.Print("\033[01;33mMISSING\033[00m")
+		fmt.Print("\033[01;33mMISSING\033[00m ")
 		return "unable to locate: " + template_path, 1
 	}
 
@@ -65,40 +63,19 @@ func run(server, recipe, command string, attributes map[string]interface{}) (str
 func ssh(server, script string) (string, int) {
 	cmd := exec.Command(script[:len(script)-1]) // TODO
 
-	var stderrb bytes.Buffer
-	var stdoutb bytes.Buffer
-
-	cmd.Stderr = &stderrb
-	cmd.Stdout = &stdoutb
-
-	err := cmd.Run()
+	output, err := cmd.CombinedOutput()
 
 	if err != nil {
 		fmt.Print(err)
-		return stdoutb.String() + stderrb.String(), 1
+		return string(output), 1
 	}
 
 	// out, status = Open3.capture2e("ssh -T -F #{path("ssh_config")} #{server}", :stdin_data => script)
 
-	return stdoutb.String() + stderrb.String(), 0
-}
-
-var home string
-
-func init() {
-	home, err := os.Getwd()
-
-	if err != nil {
-		fmt.Println("unable to get pwd", home, err)
-		os.Exit(1)
-	}
+	return string(output), 0
 }
 
 func main() {
-	// parse commands
-	// check layout
-	//
-
 	var command = flag.String("c", "", "command")
 	var directory = flag.String("d", ".", "directory")
 	var environment = flag.String("e", "", "environment")
@@ -106,49 +83,41 @@ func main() {
 
 	flag.Parse()
 
-	fmt.Println(home, *directory, *verbose)
-
-	e := layout()
+	e := layout(*directory)
 
 	layout := e[*environment]
 
-	var servers []string
-
-	for k, _ := range layout.Servers {
-		servers = append(servers, k)
-	}
-
 	exit_status := 0
 
-	for _, v := range servers {
+	for v, _ := range layout.Servers {
 		recipes := layout.Servers[v]
 
-		fmt.Print(v)
+		fmt.Println(v)
 
 		for _, recipe := range recipes {
 			fmt.Printf("  %s: ", recipe)
 
-			filename := path.Join(home, "recipe", recipe)
+			filename := path.Join(*directory, "recipe", recipe)
 
 			if _, err := os.Stat(filename); os.IsNotExist(err) {
 				fmt.Printf("unable to locate: %s\n", filename)
 				os.Exit(1)
 			}
 
-			stdout, status := run(v, recipe, *command, layout.Attributes)
+			stdout, status := run(*directory, v, recipe, *command, layout.Attributes)
 
 			switch status {
 			case -1: // nil is better? negative error codes?
 				fmt.Print("?")
 			case 0:
-				fmt.Print("\033[01;32mOK\033[00m")
+				fmt.Print("\033[01;32mOK\033[00m\n")
 			default:
-				fmt.Print("\033[01;31mERROR\033[00m")
+				fmt.Print("\033[01;31mERROR\033[00m\n")
 				exit_status = 1
 				break
 			}
 
-			if len(stdout) > 0 {
+			if *verbose && len(stdout) > 0 {
 				fmt.Fprintf(os.Stderr, " %s\n", stdout)
 			}
 		}
