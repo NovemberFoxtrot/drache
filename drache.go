@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"flag"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -24,8 +23,6 @@ type Recipe struct {
 }
 
 func (r *Recipe) render() string {
-	// ERB.new(r.source).result(binding)
-
 	return r.source
 }
 
@@ -115,17 +112,11 @@ func (b *Book) run() {
 }
 
 func main() {
-	var command = flag.String("c", "", "command")
-	var directory = flag.String("d", ".", "directory")
-	var environment = flag.String("e", "", "environment")
-	var verbose = flag.Bool("v", false, "verbose mode")
-
-	flag.Parse()
-
-	book := &Book{command: *command, directory: *directory, environment: *environment, verbose: *verbose, status: 0}
+	book := &Book{command: os.Args[1], directory: os.Args[3], environment: os.Args[2], verbose: true, status: 0}
 
 	book.run()
 
 	fmt.Println("\033[01;32mDONE\033[00m")
+
 	os.Exit(book.status)
 }
