@@ -17,10 +17,6 @@ type Template struct {
 	source     string
 }
 
-func (t *Template) initialize(source string) {
-	t.source = source
-}
-
 func (t *Template) render() string {
 	// ERB.new(t.source).result(binding)
 	return t.source
@@ -49,6 +45,7 @@ func run(server, recipe, command string, attributes map[string]interface{}) (str
 	template_path := path.Join(home, "recipe", recipe, command)
 
 	if _, err := os.Stat(template_path); os.IsNotExist(err) {
+		fmt.Print("\033[01;33mMISSING\033[00m")
 		return "unable to locate: " + template_path, 1
 	}
 
@@ -71,8 +68,8 @@ func ssh(server, script string) (string, int) {
 	var stderrb bytes.Buffer
 	var stdoutb bytes.Buffer
 
-	cmd.Stdout = &stdoutb
 	cmd.Stderr = &stderrb
+	cmd.Stdout = &stdoutb
 
 	err := cmd.Run()
 
@@ -98,11 +95,12 @@ func init() {
 }
 
 func main() {
-	fmt.Print("\033[01;33mMISSING\033[00m")
-	fmt.Print("\033[01;32mDONE\033[00m")
+	// parse commands
+	// check layout
+	// 
 
 	var command = flag.String("c", "", "command")
-	var directory = flag.String("d", ".", "directory") // recipe / layout.json root
+	var directory = flag.String("d", ".", "directory")
 	var environment = flag.String("e", "", "environment")
 	var quiet = flag.Bool("q", false, "quiet mode")
 	var server = flag.String("s", "", "server")
@@ -164,5 +162,6 @@ func main() {
 		}
 	}
 
+	fmt.Println("\033[01;32mDONE\033[00m")
 	os.Exit(exit_status)
 }
