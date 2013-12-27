@@ -102,12 +102,11 @@ func main() {
 	var command = flag.String("c", "", "command")
 	var directory = flag.String("d", ".", "directory")
 	var environment = flag.String("e", "", "environment")
-	var quiet = flag.Bool("q", false, "quiet mode")
 	var verbose = flag.Bool("v", false, "verbose mode")
 
 	flag.Parse()
 
-	fmt.Println(home, *directory, *quiet, *verbose)
+	fmt.Println(home, *directory, *verbose)
 
 	e := layout()
 
