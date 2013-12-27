@@ -97,29 +97,19 @@ func main() {
 		for _, recipe := range recipes {
 			fmt.Printf("  %s: ", recipe)
 
-			filename := path.Join(*directory, "recipe", recipe)
-
-			if _, err := os.Stat(filename); os.IsNotExist(err) {
-				fmt.Printf("unable to locate: %s\n", filename)
-				os.Exit(1)
-			}
-
 			stdout, status := run(*directory, v, recipe, *command, layout.Attributes)
 
-			switch status {
-			case -1: // nil is better? negative error codes?
-				fmt.Print("?")
-			case 0:
-				fmt.Print("\033[01;32mOK\033[00m\n")
-			default:
+			if *verbose && len(stdout) > 0 {
+				fmt.Fprintf(os.Stderr, " %s\n", stdout)
+			}
+
+			if status != 0 {
 				fmt.Print("\033[01;31mERROR\033[00m\n")
 				exit_status = 1
 				break
 			}
 
-			if *verbose && len(stdout) > 0 {
-				fmt.Fprintf(os.Stderr, " %s\n", stdout)
-			}
+			fmt.Print("\033[01;32mOK\033[00m\n")
 		}
 	}
 

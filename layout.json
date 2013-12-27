@@ -2,7 +2,8 @@
   "production": {
     "servers": {
       "db-1": ["cassandra", "cdb"],
-      "db-2": ["redis"]
+      "db-2": ["redis"],
+      "web-1": ["nginx"]
     }
   },
   "staging": {
