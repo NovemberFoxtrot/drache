@@ -97,7 +97,7 @@ func init() {
 func main() {
 	// parse commands
 	// check layout
-	// 
+	//
 
 	var command = flag.String("c", "", "command")
 	var directory = flag.String("d", ".", "directory")
@@ -116,14 +116,8 @@ func main() {
 
 	var servers []string
 
-	if len(strings.Split(*server, ",")) > 1 {
-		for _, v := range strings.Split(*server, ",") {
-			servers = append(servers, v)
-		}
-	} else {
-		for k, _ := range layout.Servers {
-			servers = append(servers, k)
-		}
+	for k, _ := range layout.Servers {
+		servers = append(servers, k)
 	}
 
 	exit_status := 0
