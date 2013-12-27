@@ -87,6 +87,8 @@ func (b *Book) run() {
 	jsonstruct := b.layout()
 	layout := jsonstruct[b.environment]
 
+	// TODO validate?
+
 	for server, _ := range layout.Servers {
 		recipes := layout.Servers[server]
 
