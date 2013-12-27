@@ -13,7 +13,7 @@ type Book struct {
 	command     string
 	directory   string
 	environment string
-	verbose     bool
+	layout      map[string]Layout
 	status      int
 }
 
@@ -31,22 +31,18 @@ type Layout struct {
 	Servers    map[string][]string    `json:"servers"`
 }
 
-func (b *Book) layout() map[string]Layout {
+func (b *Book) ParseLayout() {
 	input, err := ioutil.ReadFile(path.Join(b.directory, "layout.json"))
 
 	if err != nil {
 		fmt.Println(err)
 	}
 
-	var layout map[string]Layout
-
-	json.Unmarshal(input, &layout)
-
-	return layout
+	json.Unmarshal(input, &b.layout)
 }
 
-func run(directory, server, recipe, command string, attributes map[string]interface{}) (string, int) {
-	template_path := path.Join(directory, "recipe", recipe, command)
+func (b *Book) exec(server, recipe string) (string, int) {
+	template_path := path.Join(b.directory, "recipe", recipe, b.command)
 
 	if _, err := os.Stat(template_path); os.IsNotExist(err) {
 		fmt.Print("\033[01;33mMISSING\033[00m ")
@@ -81,22 +77,19 @@ func ssh(server, script string) (string, int) {
 }
 
 func (b *Book) run() {
-	jsonstruct := b.layout()
-	layout := jsonstruct[b.environment]
+	b.ParseLayout()
 
-	// TODO abort if layout does not parse
-
-	for server := range layout.Servers {
-		recipes := layout.Servers[server]
+	for server := range b.layout[b.environment].Servers {
+		recipes := b.layout[b.environment].Servers[server]
 
 		fmt.Println(server)
 
 		for _, recipe := range recipes {
 			fmt.Printf("  %s: ", recipe)
 
-			stdout, status := run(b.directory, server, recipe, b.command, layout.Attributes)
+			stdout, status := b.exec(server, recipe)
 
-			if b.verbose && len(stdout) > 0 {
+			if status != 0 && len(stdout) > 0 {
 				fmt.Fprintf(os.Stderr, " %s\n", stdout)
 			}
 
@@ -112,11 +105,9 @@ func (b *Book) run() {
 }
 
 func main() {
-	book := &Book{command: os.Args[1], directory: os.Args[3], environment: os.Args[2], verbose: true, status: 0}
+	book := &Book{command: os.Args[1], directory: os.Args[3], environment: os.Args[2], status: 0}
 
 	book.run()
-
-	fmt.Println("\033[01;32mDONE\033[00m")
 
 	os.Exit(book.status)
 }
