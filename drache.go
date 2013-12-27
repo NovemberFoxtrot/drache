@@ -103,7 +103,6 @@ func main() {
 	var directory = flag.String("d", ".", "directory")
 	var environment = flag.String("e", "", "environment")
 	var quiet = flag.Bool("q", false, "quiet mode")
-	var server = flag.String("s", "", "server")
 	var verbose = flag.Bool("v", false, "verbose mode")
 
 	flag.Parse()
