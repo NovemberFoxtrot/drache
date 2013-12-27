@@ -13,8 +13,8 @@ import (
 )
 
 type Template struct {
-	source     string
 	attributes map[string]interface{}
+	source     string
 }
 
 func (t *Template) initialize(source string) {
@@ -27,8 +27,8 @@ func (t *Template) render() string {
 }
 
 type Entries struct {
-	Servers    map[string][]string    `json:"servers"`
 	Attributes map[string]interface{} `json:"attributes"`
+	Servers    map[string][]string    `json:"servers"`
 }
 
 func layout() map[string]Entries {
