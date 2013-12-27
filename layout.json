@@ -8,7 +8,8 @@
   },
   "staging": {
     "servers": {
-      "sta1": ["redis", "erb"]
+      "sta1": ["redis", "erb"],
+      "test": ["go"]
     },
     "attributes": {
       "exit_code": 0

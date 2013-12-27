@@ -55,23 +55,23 @@ func run(directory, server, recipe, command string, attributes map[string]interf
 		fmt.Print("\033[01;33mMISSING\033[00m ")
 		return "unable to locate: " + template_path, 1
 	}
+	/*
+		source, err := ioutil.ReadFile(template_path)
 
-	source, err := ioutil.ReadFile(template_path)
+		if err != nil {
+			return "unable to read file: " + template_path, 1
+		}
+	*/
+	// template := &Recipe{source: string(source), attributes: attributes}
 
-	if err != nil {
-		return "unable to read file: " + template_path, 1
-	}
-
-	template := &Recipe{source: string(source), attributes: attributes}
-
-	out, status := ssh(server, template.render())
+	// out, status := ssh(server, template.render())
+	out, status := ssh(server, template_path)
 
 	return out, status
 }
 
 func ssh(server, script string) (string, int) {
-	// cmd := exec.Command(script[:len(script)-1]) // TODO
-	cmd := exec.Command("bash", script) // TODO
+	cmd := exec.Command(script)
 	output, err := cmd.CombinedOutput()
 
 	if err != nil {
@@ -86,8 +86,6 @@ func ssh(server, script string) (string, int) {
 func (b *Book) run() {
 	jsonstruct := b.layout()
 	layout := jsonstruct[b.environment]
-
-	// TODO validate?
 
 	for server, _ := range layout.Servers {
 		recipes := layout.Servers[server]
