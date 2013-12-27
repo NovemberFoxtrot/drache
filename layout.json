@@ -14,5 +14,13 @@
     "attributes": {
       "exit_code": 0
     }
+  },
+  "development": {
+    "servers": {
+      "local": ["go"]
+    },
+    "attributes": {
+      "exit_code": 0
+    }
   }
 }

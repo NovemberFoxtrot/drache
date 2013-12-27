@@ -89,7 +89,7 @@ func (b *Book) run() {
 
 	// TODO abort if layout does not parse
 
-	for server, _ := range layout.Servers {
+	for server := range layout.Servers {
 		recipes := layout.Servers[server]
 
 		fmt.Println(server)
