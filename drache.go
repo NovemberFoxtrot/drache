@@ -10,14 +10,23 @@ import (
 	"path"
 )
 
-type Template struct {
+type Book struct {
+	command     string
+	directory   string
+	environment string
+	verbose     bool
+	status      int
+}
+
+type Recipe struct {
 	attributes map[string]interface{}
 	source     string
 }
 
-func (t *Template) render() string {
-	// ERB.new(t.source).result(binding)
-	return t.source
+func (r *Recipe) render() string {
+	// ERB.new(r.source).result(binding)
+
+	return r.source
 }
 
 type Layout struct {
@@ -25,18 +34,18 @@ type Layout struct {
 	Servers    map[string][]string    `json:"servers"`
 }
 
-func layout(directory string) map[string]Layout {
-	input, err := ioutil.ReadFile(path.Join(directory, "layout.json"))
+func (b *Book) layout() map[string]Layout {
+	input, err := ioutil.ReadFile(path.Join(b.directory, "layout.json"))
 
 	if err != nil {
 		fmt.Println(err)
 	}
 
-	var e map[string]Layout
+	var layout map[string]Layout
 
-	json.Unmarshal(input, &e)
+	json.Unmarshal(input, &layout)
 
-	return e
+	return layout
 }
 
 func run(directory, server, recipe, command string, attributes map[string]interface{}) (string, int) {
@@ -53,7 +62,7 @@ func run(directory, server, recipe, command string, attributes map[string]interf
 		return "unable to read file: " + template_path, 1
 	}
 
-	template := &Template{source: string(source), attributes: attributes}
+	template := &Recipe{source: string(source), attributes: attributes}
 
 	out, status := ssh(server, template.render())
 
@@ -61,8 +70,8 @@ func run(directory, server, recipe, command string, attributes map[string]interf
 }
 
 func ssh(server, script string) (string, int) {
-	cmd := exec.Command(script[:len(script)-1]) // TODO
-
+	// cmd := exec.Command(script[:len(script)-1]) // TODO
+	cmd := exec.Command("bash", script) // TODO
 	output, err := cmd.CombinedOutput()
 
 	if err != nil {
@@ -71,8 +80,36 @@ func ssh(server, script string) (string, int) {
 	}
 
 	// out, status = Open3.capture2e("ssh -T -F #{path("ssh_config")} #{server}", :stdin_data => script)
-
 	return string(output), 0
+}
+
+func (b *Book) run() {
+	jsonstruct := b.layout()
+	layout := jsonstruct[b.environment]
+
+	for server, _ := range layout.Servers {
+		recipes := layout.Servers[server]
+
+		fmt.Println(server)
+
+		for _, recipe := range recipes {
+			fmt.Printf("  %s: ", recipe)
+
+			stdout, status := run(b.directory, server, recipe, b.command, layout.Attributes)
+
+			if b.verbose && len(stdout) > 0 {
+				fmt.Fprintf(os.Stderr, " %s\n", stdout)
+			}
+
+			if status != 0 {
+				fmt.Print("\033[01;31mERROR\033[00m\n")
+				b.status = 1
+				break
+			}
+
+			fmt.Print("\033[01;32mOK\033[00m\n")
+		}
+	}
 }
 
 func main() {
@@ -83,36 +120,10 @@ func main() {
 
 	flag.Parse()
 
-	e := layout(*directory)
+	book := &Book{command: *command, directory: *directory, environment: *environment, verbose: *verbose, status: 0}
 
-	layout := e[*environment]
-
-	exit_status := 0
-
-	for v, _ := range layout.Servers {
-		recipes := layout.Servers[v]
-
-		fmt.Println(v)
-
-		for _, recipe := range recipes {
-			fmt.Printf("  %s: ", recipe)
-
-			stdout, status := run(*directory, v, recipe, *command, layout.Attributes)
-
-			if *verbose && len(stdout) > 0 {
-				fmt.Fprintf(os.Stderr, " %s\n", stdout)
-			}
-
-			if status != 0 {
-				fmt.Print("\033[01;31mERROR\033[00m\n")
-				exit_status = 1
-				break
-			}
-
-			fmt.Print("\033[01;32mOK\033[00m\n")
-		}
-	}
+	book.run()
 
 	fmt.Println("\033[01;32mDONE\033[00m")
-	os.Exit(exit_status)
+	os.Exit(book.status)
 }
