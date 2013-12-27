@@ -59,17 +59,10 @@ func run(server, recipe, command string, attributes map[string]interface{}) (str
 	}
 
 	template := &Template{source: string(source), attributes: attributes}
-	ssh(server, template.render())
 
-	return "", 0
-}
+	out, status := ssh(server, template.render())
 
-func local() {
-	// runs recipe locally
-}
-
-func telnet() {
-	// uses telnet
+	return out, status
 }
 
 func ssh(server, script string) (string, int) {
@@ -84,20 +77,13 @@ func ssh(server, script string) (string, int) {
 	err := cmd.Run()
 
 	if err != nil {
-		fmt.Println(err)
-		return "Errrrrr", 1
+		fmt.Print(err)
+		return stdoutb.String() + stderrb.String(), 1
 	}
 
-	fmt.Println("stdout", stdoutb.String(), "stderr", stderrb.String(), "err", err)
-
 	// out, status = Open3.capture2e("ssh -T -F #{path("ssh_config")} #{server}", :stdin_data => script)
-	// return out, status.exitstatus
 
-	return "", 0
-}
-
-type out struct {
-	name string
+	return stdoutb.String() + stderrb.String(), 0
 }
 
 var home string
@@ -106,19 +92,20 @@ func init() {
 	home, err := os.Getwd()
 
 	if err != nil {
-		fmt.Println(err)
+		fmt.Println("unable to get pwd", home, err)
 		os.Exit(1)
 	}
-
-	fmt.Println(home)
 }
 
 func main() {
 	fmt.Print("\033[01;33mMISSING\033[00m")
 	fmt.Print("\033[01;32mDONE\033[00m")
 
+	var command = flag.String("c", "", "command")
 	var directory = flag.String("d", ".", "directory") // recipe / layout.json root
+	var environment = flag.String("e", "", "environment")
 	var quiet = flag.Bool("q", false, "quiet mode")
+	var server = flag.String("s", "", "server")
 	var verbose = flag.Bool("v", false, "verbose mode")
 
 	flag.Parse()
@@ -127,27 +114,12 @@ func main() {
 
 	e := layout()
 
-	if os.Args[1] != "run" {
-		fmt.Println("unknown usage")
-		os.Exit(1)
-	}
-
-	command := os.Args[2]
-
-	environment := strings.Split(os.Args[3], ":")[0]
-
-	server := ""
-
-	if len(strings.Split(os.Args[3], ":")) > 1 {
-		server = strings.Split(os.Args[3], ":")[1]
-	}
-
-	layout := e[environment]
+	layout := e[*environment]
 
 	var servers []string
 
-	if len(strings.Split(server, ",")) > 1 {
-		for _, v := range strings.Split(server, ",") {
+	if len(strings.Split(*server, ",")) > 1 {
+		for _, v := range strings.Split(*server, ",") {
 			servers = append(servers, v)
 		}
 	} else {
@@ -156,11 +128,7 @@ func main() {
 		}
 	}
 
-	attributes := layout.Attributes
-
 	exit_status := 0
-
-	fmt.Println(command, environment, server, layout, servers, attributes, exit_status)
 
 	for _, v := range servers {
 		recipes := layout.Servers[v]
@@ -177,7 +145,7 @@ func main() {
 				os.Exit(1)
 			}
 
-			stdout, status := run(server, recipe, command, attributes)
+			stdout, status := run(v, recipe, *command, layout.Attributes)
 
 			switch status {
 			case -1: // nil is better? negative error codes?
@@ -190,7 +158,6 @@ func main() {
 				break
 			}
 
-			// TODO setup verbose levels
 			if len(stdout) > 0 {
 				fmt.Fprintf(os.Stderr, " %s\n", stdout)
 			}
