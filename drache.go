@@ -11,7 +11,6 @@ import (
 
 type Book struct {
 	command     string
-	directory   string
 	environment string
 	layout      map[string]Layout
 	status      int
@@ -32,7 +31,7 @@ type Layout struct {
 }
 
 func (b *Book) ParseLayout() {
-	input, err := ioutil.ReadFile(path.Join(b.directory, "layout.json"))
+	input, err := ioutil.ReadFile(path.Join(".", "layout.json"))
 
 	if err != nil {
 		fmt.Println(err)
@@ -42,12 +41,13 @@ func (b *Book) ParseLayout() {
 }
 
 func (b *Book) exec(server, recipe string) (string, int) {
-	template_path := path.Join(b.directory, "recipe", recipe, b.command)
+	template_path := path.Join(".", "recipe", recipe, b.command)
 
 	if _, err := os.Stat(template_path); os.IsNotExist(err) {
 		fmt.Print("\033[01;33mMISSING\033[00m ")
 		return "unable to locate: " + template_path, 1
 	}
+
 	/*
 		source, err := ioutil.ReadFile(template_path)
 
@@ -105,7 +105,7 @@ func (b *Book) run() {
 }
 
 func main() {
-	book := &Book{command: os.Args[1], directory: os.Args[3], environment: os.Args[2], status: 0}
+	book := &Book{command: os.Args[1], environment: os.Args[2], status: 0}
 
 	book.run()
 
