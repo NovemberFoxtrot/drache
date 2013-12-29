@@ -37,7 +37,11 @@ func (b *Book) ParseLayout() {
 		fmt.Println(err)
 	}
 
-	json.Unmarshal(input, &b.layout)
+	err = json.Unmarshal(input, &b.layout)
+
+	if err != nil {
+		fmt.Println(err)
+	}
 }
 
 func (b *Book) exec(server, recipe string) (string, int) {
