@@ -81,8 +81,6 @@ func ssh(server, script string) (string, int) {
 }
 
 func (b *Book) run() {
-	b.ParseLayout()
-
 	for server := range b.layout[b.environment].Servers {
 		recipes := b.layout[b.environment].Servers[server]
 
@@ -110,6 +108,8 @@ func (b *Book) run() {
 
 func main() {
 	book := &Book{command: os.Args[1], environment: os.Args[2], status: 0}
+
+	book.ParseLayout()
 
 	book.run()
 
