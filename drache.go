@@ -33,22 +33,18 @@ func (b *Book) ParseLayout() {
 }
 
 func (b *Book) exec(server, recipe string) (string, int) {
-	template_path := path.Join(".", "recipe", recipe, b.command)
+	scriptPath := path.Join(".", "recipe", recipe, b.command)
 
-	if _, err := os.Stat(template_path); os.IsNotExist(err) {
-		fmt.Print("\033[01;33mMISSING\033[00m ")
-		return "unable to locate: " + template_path, 0
+	if _, err := os.Stat(scriptPath); os.IsNotExist(err) {
+		return "\033[01;33mMISSING\033[00m unable to locate: " + scriptPath, 0
 	}
 
-	source, err := ioutil.ReadFile(template_path)
-
-	if err != nil {
-		return "unable to read file: " + template_path, 1
+	if source, err := ioutil.ReadFile(scriptPath); err != nil {
+		return "unable to read file: " + scriptPath, 1
+	} else {
+		out, status := ssh(server, string(source))
+		return out, status
 	}
-
-	out, status := ssh(server, string(source))
-
-	return out, status
 }
 
 func ssh(server, script string) (string, int) {
@@ -88,10 +84,7 @@ func (b *Book) run() {
 
 func main() {
 	book := &Book{command: os.Args[2], environment: os.Args[1], status: 0}
-
 	book.ParseLayout()
-
 	book.run()
-
 	os.Exit(book.status)
 }
