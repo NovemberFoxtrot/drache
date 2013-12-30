@@ -1,26 +1,7 @@
 {
   "production": {
     "servers": {
-      "db-1": ["cassandra", "cdb"],
-      "db-2": ["redis"],
-      "web-1": ["nginx"]
-    }
-  },
-  "staging": {
-    "servers": {
-      "sta1": ["redis", "erb"],
-      "test": ["go"]
-    },
-    "attributes": {
-      "exit_code": 0
-    }
-  },
-  "development": {
-    "servers": {
-      "local": ["go"]
-    },
-    "attributes": {
-      "exit_code": 0
+      "db-1": ["cassandra"]
     }
   }
 }
