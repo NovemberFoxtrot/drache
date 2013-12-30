@@ -16,18 +16,8 @@ type Book struct {
 	status      int
 }
 
-type Recipe struct {
-	attributes map[string]interface{}
-	source     string
-}
-
-func (r *Recipe) render() string {
-	return r.source
-}
-
 type Layout struct {
-	Attributes map[string]interface{} `json:"attributes"`
-	Servers    map[string][]string    `json:"servers"`
+	Servers map[string][]string `json:"servers"`
 }
 
 func (b *Book) ParseLayout() {
@@ -37,9 +27,7 @@ func (b *Book) ParseLayout() {
 		fmt.Println(err)
 	}
 
-	err = json.Unmarshal(input, &b.layout)
-
-	if err != nil {
+	if err = json.Unmarshal(input, &b.layout); err != nil {
 		fmt.Println(err)
 	}
 }
@@ -58,10 +46,7 @@ func (b *Book) exec(server, recipe string) (string, int) {
 		return "unable to read file: " + template_path, 1
 	}
 
-	// template := &Recipe{source: string(source), attributes: attributes}
-	template := &Recipe{source: string(source)}
-
-	out, status := ssh(server, template.render())
+	out, status := ssh(server, string(source))
 
 	return out, status
 }
