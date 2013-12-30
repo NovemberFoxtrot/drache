@@ -68,6 +68,7 @@ func (b *Book) exec(server, recipe string) (string, int) {
 
 func ssh(server, script string) (string, int) {
 	cmd := exec.Command("ssh", "-T", server, script)
+
 	output, err := cmd.CombinedOutput()
 
 	if err != nil {
@@ -80,21 +81,17 @@ func ssh(server, script string) (string, int) {
 
 func (b *Book) run() {
 	for server := range b.layout[b.environment].Servers {
-		recipes := b.layout[b.environment].Servers[server]
+		scripts := b.layout[b.environment].Servers[server]
 
 		fmt.Println(server)
 
-		for _, recipe := range recipes {
-			fmt.Printf("  %s: ", recipe)
+		for _, script := range scripts {
+			fmt.Printf("  %s: ", script)
 
-			stdout, status := b.exec(server, recipe)
-
-			if status != 0 && len(stdout) > 0 {
-				fmt.Fprintf(os.Stderr, " %s\n", stdout)
-			}
+			stdout, status := b.exec(server, script)
 
 			if status != 0 {
-				fmt.Print("\033[01;31mERROR\033[00m\n")
+				fmt.Fprintf(os.Stderr, "\033[01;31mERROR\033[00m\n %s\n", stdout)
 				b.status = 1
 				break
 			}
