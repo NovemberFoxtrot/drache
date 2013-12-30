@@ -49,7 +49,7 @@ func (b *Book) exec(server, recipe string) (string, int) {
 
 	if _, err := os.Stat(template_path); os.IsNotExist(err) {
 		fmt.Print("\033[01;33mMISSING\033[00m ")
-		return "unable to locate: " + template_path, 1
+		return "unable to locate: " + template_path, 0
 	}
 
 	source, err := ioutil.ReadFile(template_path)
@@ -105,7 +105,7 @@ func (b *Book) run() {
 }
 
 func main() {
-	book := &Book{command: os.Args[1], environment: os.Args[2], status: 0}
+	book := &Book{command: os.Args[2], environment: os.Args[1], status: 0}
 
 	book.ParseLayout()
 
