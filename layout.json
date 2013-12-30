@@ -1,7 +1,12 @@
 {
+  "development": {
+    "servers": {
+      "local": ["drache"]
+    }
+  },
   "production": {
     "servers": {
-      "db-1": ["cassandra"]
+      "tiger": ["date"]
     }
   }
 }

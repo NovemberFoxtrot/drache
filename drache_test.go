@@ -55,7 +55,7 @@ func TestNoLayout(t *testing.T) {
 		}
 	*/
 
-	cmd := exec.Command("./drache", "install", "production")
+	cmd := exec.Command("./drache", "install", "development")
 	output, err := cmd.CombinedOutput()
 
 	if err != nil {

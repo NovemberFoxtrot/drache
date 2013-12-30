@@ -52,23 +52,22 @@ func (b *Book) exec(server, recipe string) (string, int) {
 		return "unable to locate: " + template_path, 1
 	}
 
-	/*
-		source, err := ioutil.ReadFile(template_path)
+	source, err := ioutil.ReadFile(template_path)
 
-		if err != nil {
-			return "unable to read file: " + template_path, 1
-		}
-	*/
+	if err != nil {
+		return "unable to read file: " + template_path, 1
+	}
+
 	// template := &Recipe{source: string(source), attributes: attributes}
+	template := &Recipe{source: string(source)}
 
-	// out, status := ssh(server, template.render())
-	out, status := ssh(server, template_path)
+	out, status := ssh(server, template.render())
 
 	return out, status
 }
 
 func ssh(server, script string) (string, int) {
-	cmd := exec.Command(script)
+	cmd := exec.Command("ssh", "-T", server, script)
 	output, err := cmd.CombinedOutput()
 
 	if err != nil {
@@ -76,7 +75,6 @@ func ssh(server, script string) (string, int) {
 		return string(output), 1
 	}
 
-	// out, status = Open3.capture2e("ssh -T -F #{path("ssh_config")} #{server}", :stdin_data => script)
 	return string(output), 0
 }
 
