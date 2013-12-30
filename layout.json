@@ -6,7 +6,7 @@
   },
   "production": {
     "servers": {
-      "tiger": ["date"]
+      "tiger": ["init", "ntp", "date"]
     }
   }
 }
