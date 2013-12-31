@@ -1,3 +1,5 @@
+package scripts
+
 import (
 	"encoding/json"
 	"fmt"
@@ -8,10 +10,10 @@ import (
 )
 
 type Book struct {
-	command     string
-	environment string
+	Command     string
+	Environment string
 	layout      map[string]Layout
-	status      int
+	Status      int
 }
 
 type Layout struct {
@@ -32,7 +34,7 @@ func (b *Book) ParseLayout() {
 }
 
 func (b *Book) exec(server, recipe string) (string, int) {
-	scriptPath := path.Join(".", "recipe", recipe, b.command)
+	scriptPath := path.Join(".", "recipe", recipe, b.Command)
 
 	if _, err := os.Stat(scriptPath); os.IsNotExist(err) {
 		return "\033[01;33mMISSING\033[00m unable to locate: " + scriptPath, 0
@@ -59,9 +61,9 @@ func ssh(server, script string) (string, int) {
 	return string(output), 0
 }
 
-func (b *Book) run() {
-	for server := range b.layout[b.environment].Servers {
-		scripts := b.layout[b.environment].Servers[server]
+func (b *Book) Run() {
+	for server := range b.layout[b.Environment].Servers {
+		scripts := b.layout[b.Environment].Servers[server]
 
 		fmt.Println(server)
 
@@ -72,7 +74,7 @@ func (b *Book) run() {
 
 			if status != 0 {
 				fmt.Fprintf(os.Stderr, "\033[01;31mERROR\033[00m\n %s\n", stdout)
-				b.status = 1
+				b.Status = 1
 				break
 			}
 

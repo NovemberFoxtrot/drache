@@ -8,8 +8,8 @@ import (
 
 
 func main() {
-	book := &Book{command: os.Args[2], environment: os.Args[1], status: 0}
+	book := &scripts.Book{Command: os.Args[2], Environment: os.Args[1], Status: 0}
 	book.ParseLayout()
-	book.run()
-	os.Exit(book.status)
+	book.Run()
+	os.Exit(book.Status)
 }
