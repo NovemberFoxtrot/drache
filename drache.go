@@ -17,7 +17,8 @@ type Book struct {
 }
 
 type Layout struct {
-	Servers map[string][]string `json:"servers"`
+	Attributes map[string]interface{} `json:"attributes"`
+	Servers    map[string][]string    `json:"servers"`
 }
 
 func (b *Book) ParseLayout() {
