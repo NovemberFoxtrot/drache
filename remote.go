@@ -3,19 +3,19 @@ package main
 import (
 	"os"
 
-	"github.com/NovemberFoxtrot/remote/remote"
+	"github.com/NovemberFoxtrot/remote/scripts"
 )
 
 func main() {
-	remote := &remote.Script{Command: os.Args[2], Environment: os.Args[1], Status: 0}
+	script := &scripts.Script{Command: os.Args[2], Environment: os.Args[1], Status: 0}
 
-	err := remote.ParseLayout()
+	err := script.ParseLayout()
 
 	if err != nil {
 		panic(err)
 	}
 
-	remote.Run()
+	script.Run()
 
-	os.Exit(remote.Status)
+	os.Exit(script.Status)
 }

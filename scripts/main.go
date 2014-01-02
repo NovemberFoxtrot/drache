@@ -9,7 +9,7 @@ import (
 	"path"
 )
 
-type Book struct {
+type Script struct {
 	Command     string
 	Environment string
 	layout      map[string]Layout
@@ -21,19 +21,25 @@ type Layout struct {
 	Servers    map[string][]string    `json:"servers"`
 }
 
-func (b *Book) ParseLayout() {
+func readLayout() ([]byte, error) {
 	input, err := ioutil.ReadFile(path.Join(".", "layout.json"))
 
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	if err = json.Unmarshal(input, &b.layout); err != nil {
-		fmt.Println(err)
-	}
+	return input, err
 }
 
-func (b *Book) exec(server, recipe string) (string, int) {
+func (b *Script) ParseLayout() error {
+	input, err := readLayout()
+
+	if err != nil {
+		return err	
+	}
+
+	err = json.Unmarshal(input, &b.layout)
+
+	return err
+}
+
+func (b *Script) exec(server, recipe string) (string, int) {
 	scriptPath := path.Join(".", "recipe", recipe, b.Command)
 
 	if _, err := os.Stat(scriptPath); os.IsNotExist(err) {
@@ -61,7 +67,7 @@ func ssh(server, script string) (string, int) {
 	return string(output), 0
 }
 
-func (b *Book) Run() {
+func (b *Script) Run() {
 	for server := range b.layout[b.Environment].Servers {
 		scripts := b.layout[b.Environment].Servers[server]
 
