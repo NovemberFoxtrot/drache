@@ -11,13 +11,13 @@ type Layout struct {
 	Servers    map[string][]string    `json:"servers"`
 }
 
-func ReadLayout() ([]byte, error) {
+func Read() ([]byte, error) {
 	input, err := ioutil.ReadFile(path.Join(".", "layout.json"))
 
 	return input, err
 }
 
-func (layout *Layout) ParseLayout(input []byte) error {
+func (layout *Layout) Parse(input []byte) error {
 	err := json.Unmarshal(input, &layout)
 
 	return err

@@ -1,39 +1,48 @@
 package main
 
 import (
-	"os"
+	_ "os"
+	"fmt"
 
 	"github.com/NovemberFoxtrot/remote/layouts"
-	"github.com/NovemberFoxtrot/remote/scripts"
+	// "github.com/NovemberFoxtrot/remote/scripts"
 )
 
 func main() {
-	input, err := layouts.ReadLayout()
+	input, err := layouts.Read()
 
 	if err != nil {
 		panic(err)
 	}
 
-	layout, err := layouts.ParseLayout(input)
+	var layout layouts.Layout
+
+	err = layout.Parse(input)
+
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println(layout)
 
 	//for server := range b.layout[b.Environment].Servers {
-		//scripts := b.layout[b.Environment].Servers[server]
+	//scripts := b.layout[b.Environment].Servers[server]
 
-		//fmt.Println(server)
-		//for _, script := range scripts {
+	//fmt.Println(server)
+	//for _, script := range scripts {
 	// fmt.Printf("  %s: ", script)
-		}
+	// }
 	//}
 
-	script := &scripts.Script{Command: os.Args[2], Environment: os.Args[1], Status: 0}
+	//script := &scripts.Script{Command: os.Args[2], Environment: os.Args[1], Status: 0}
 
-	err := script.ParseLayout()
+	//err := script.ParseLayout()
 
-	if err != nil {
-		panic(err)
-	}
+	//if err != nil {
+	//	panic(err)
+	//}
 
-	script.Run()
+	//script.Run()
 
-	os.Exit(script.Status)
+	//os.Exit(script.Status)
 }
