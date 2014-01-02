@@ -1,7 +1,6 @@
 package scripts
 
 import (
-	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -12,31 +11,8 @@ import (
 type Script struct {
 	Command     string
 	Environment string
-	layout      map[string]Layout
-	Status      int
-}
-
-type Layout struct {
-	Attributes map[string]interface{} `json:"attributes"`
-	Servers    map[string][]string    `json:"servers"`
-}
-
-func readLayout() ([]byte, error) {
-	input, err := ioutil.ReadFile(path.Join(".", "layout.json"))
-
-	return input, err
-}
-
-func (b *Script) ParseLayout() error {
-	input, err := readLayout()
-
-	if err != nil {
-		return err	
-	}
-
-	err = json.Unmarshal(input, &b.layout)
-
-	return err
+	// layout      map[string]Layout
+	Status int
 }
 
 func (b *Script) exec(server, recipe string) (string, int) {
@@ -68,23 +44,14 @@ func ssh(server, script string) (string, int) {
 }
 
 func (b *Script) Run() {
-	for server := range b.layout[b.Environment].Servers {
-		scripts := b.layout[b.Environment].Servers[server]
+	stdout, status := b.exec(server, script)
 
-		fmt.Println(server)
+	if status != 0 {
+		fmt.Fprintf(os.Stderr, "\033[01;31mERROR\033[00m\n %s\n", stdout)
+		b.Status = 1
+		break
 
-		for _, script := range scripts {
-			fmt.Printf("  %s: ", script)
-
-			stdout, status := b.exec(server, script)
-
-			if status != 0 {
-				fmt.Fprintf(os.Stderr, "\033[01;31mERROR\033[00m\n %s\n", stdout)
-				b.Status = 1
-				break
-			}
-
-			fmt.Print("\033[01;32mOK\033[00m\n")
-		}
 	}
+
+	fmt.Print("\033[01;32mOK\033[00m\n")
 }
