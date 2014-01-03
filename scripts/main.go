@@ -11,7 +11,7 @@ import (
 type Script struct {
 	Command     string
 	Environment string
-	Status int
+	Status      int
 }
 
 func (b *Script) exec(server, recipe string) (string, int) {
@@ -43,16 +43,16 @@ func ssh(server, script string) (string, int) {
 }
 
 func (b *Script) Run() {
-/*
-	stdout, status := b.exec(server, script)
+	/*
+		stdout, status := b.exec(server, script)
 
-	if status != 0 {
-		fmt.Fprintf(os.Stderr, "\033[01;31mERROR\033[00m\n %s\n", stdout)
-		b.Status = 1
-		break
+		if status != 0 {
+			fmt.Fprintf(os.Stderr, "\033[01;31mERROR\033[00m\n %s\n", stdout)
+			b.Status = 1
+			break
 
-	}
+		}
 
-	fmt.Print("\033[01;32mOK\033[00m\n")
-*/
+		fmt.Print("\033[01;32mOK\033[00m\n")
+	*/
 }

@@ -36,13 +36,7 @@ func main() {
 
 			fmt.Println(script)
 
-			//err := script.ParseLayout()
-
-			//if err != nil {
-			//	panic(err)
-			//}
-
-			//script.Run()
+			script.Run()
 		}
 	}
 
