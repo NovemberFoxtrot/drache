@@ -6,13 +6,15 @@ import (
 	"path"
 )
 
-type Layout struct {
+type Environment struct {
 	Attributes map[string]interface{} `json:"attributes"`
 	Servers    map[string][]string    `json:"servers"`
 }
 
-func Read() ([]byte, error) {
-	input, err := ioutil.ReadFile(path.Join(".", "layout.json"))
+type Layout map[string]Environment
+
+func Read(directory string) ([]byte, error) {
+	input, err := ioutil.ReadFile(path.Join(directory, "layout.json"))
 
 	return input, err
 }

@@ -1,15 +1,15 @@
 package main
 
 import (
-	_ "os"
 	"fmt"
+	"os"
 
 	"github.com/NovemberFoxtrot/remote/layouts"
 	// "github.com/NovemberFoxtrot/remote/scripts"
 )
 
 func main() {
-	input, err := layouts.Read()
+	input, err := layouts.Read(os.Args[1])
 
 	if err != nil {
 		panic(err)
