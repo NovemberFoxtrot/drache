@@ -11,7 +11,6 @@ import (
 type Script struct {
 	Command     string
 	Environment string
-	// layout      map[string]Layout
 	Status int
 }
 
@@ -44,6 +43,7 @@ func ssh(server, script string) (string, int) {
 }
 
 func (b *Script) Run() {
+/*
 	stdout, status := b.exec(server, script)
 
 	if status != 0 {
@@ -54,4 +54,5 @@ func (b *Script) Run() {
 	}
 
 	fmt.Print("\033[01;32mOK\033[00m\n")
+*/
 }
