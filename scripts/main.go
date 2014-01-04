@@ -10,22 +10,29 @@ import (
 
 type Script struct {
 	Command     string
+	Directory   string
 	Environment string
+	Output      string
+	Server      string
+	Name        string
 	Status      int
 }
 
-func (b *Script) Run(server, recipe string) (string, int) {
-	scriptPath := path.Join(".", "recipe", recipe, b.Command)
+func (script *Script) Run() {
+	scriptPath := path.Join(script.Directory, "recipe", script.Name, script.Command)
 
 	if _, err := os.Stat(scriptPath); os.IsNotExist(err) {
-		return "\033[01;33mMISSING\033[00m unable to locate: " + scriptPath, 0
+		script.Output = "\033[01;33mMISSING\033[00m unable to locate: " + scriptPath
+		script.Status = 1
 	}
 
 	if source, err := ioutil.ReadFile(scriptPath); err != nil {
-		return "unable to read file: " + scriptPath, 1
+		script.Output = "unable to read file: " + scriptPath
+		script.Status = 1
 	} else {
-		out, status := ssh(server, string(source))
-		return out, status
+		out, status := ssh(script.Server, string(source))
+		script.Output = out
+		script.Status = status
 	}
 }
 

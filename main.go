@@ -9,7 +9,12 @@ import (
 )
 
 func main() {
-	input, err := layouts.Read(os.Args[3])
+
+	theCommand := os.Args[1]
+	theDirectory := os.Args[3]
+	theEnvironment := os.Args[2]
+
+	input, err := layouts.Read(theDirectory)
 
 	if err != nil {
 		panic(err)
@@ -27,19 +32,28 @@ func main() {
 
 	status := 0
 
-	for server := range layout[os.Args[2]].Servers {
-		theScripts := layout[os.Args[2]].Servers[server]
+	for server := range layout[theEnvironment].Servers {
+		theScripts := layout[theEnvironment].Servers[server]
 
 		fmt.Println(server)
 
 		for _, theScript := range theScripts {
 			fmt.Printf("  %s: ", theScript)
-			script := &scripts.Script{Command: os.Args[1], Environment: os.Args[2], Status: 0}
 
-			stdout, status := script.Run(server, os.Args[1])
+			script := &scripts.Script{
+				Command:     theCommand,
+				Directory:   theDirectory,
+				Environment: theEnvironment,
+				Name:        theScript,
+				Server:      server,
+				Status:      0,
+			}
 
-			if status != 0 {
-				fmt.Fprintf(os.Stderr, "\033[01;31mERROR\033[00m\n %s\n", stdout)
+			script.Run()
+
+			if script.Status != 0 {
+				fmt.Fprintf(os.Stderr, "\033[01;31mERROR\033[00m\n %s\n", script.Output)
+				status = script.Status
 				break
 			}
 
