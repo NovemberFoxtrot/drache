@@ -14,7 +14,7 @@ type Script struct {
 	Status      int
 }
 
-func (b *Script) exec(server, recipe string) (string, int) {
+func (b *Script) Run(server, recipe string) (string, int) {
 	scriptPath := path.Join(".", "recipe", recipe, b.Command)
 
 	if _, err := os.Stat(scriptPath); os.IsNotExist(err) {
@@ -40,19 +40,4 @@ func ssh(server, script string) (string, int) {
 	}
 
 	return string(output), 0
-}
-
-func (b *Script) Run() {
-	/*
-		stdout, status := b.exec(server, script)
-
-		if status != 0 {
-			fmt.Fprintf(os.Stderr, "\033[01;31mERROR\033[00m\n %s\n", stdout)
-			b.Status = 1
-			break
-
-		}
-
-		fmt.Print("\033[01;32mOK\033[00m\n")
-	*/
 }

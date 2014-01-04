@@ -25,6 +25,8 @@ func main() {
 
 	fmt.Println(layout)
 
+	status := 0
+
 	for server := range layout[os.Args[2]].Servers {
 		theScripts := layout[os.Args[2]].Servers[server]
 
@@ -34,11 +36,16 @@ func main() {
 			fmt.Printf("  %s: ", theScript)
 			script := &scripts.Script{Command: os.Args[1], Environment: os.Args[2], Status: 0}
 
-			fmt.Println(script)
+			stdout, status := script.Run(server, os.Args[1])
 
-			script.Run()
+			if status != 0 {
+				fmt.Fprintf(os.Stderr, "\033[01;31mERROR\033[00m\n %s\n", stdout)
+				break
+			}
+
+			fmt.Print("\033[01;32mOK\033[00m\n")
 		}
 	}
 
-	//os.Exit(script.Status)
+	os.Exit(status)
 }
