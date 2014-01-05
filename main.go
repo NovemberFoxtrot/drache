@@ -35,7 +35,7 @@ func main() {
 		fmt.Println(server)
 
 		for _, theScript := range theScripts {
-			fmt.Printf("  %s: ", theScript)
+			fmt.Printf(" %s: ", theScript)
 
 			script := &scripts.Script{
 				Command:     theCommand,
