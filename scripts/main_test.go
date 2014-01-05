@@ -1,70 +1,23 @@
 package scripts
 
 import (
-	"io/ioutil"
-	"os"
-	"os/exec"
-	"strings"
 	"testing"
 )
 
-func TestNew(t *testing.T) {
-	book := &Book{command: "install", environment: "testing", status: 0}
+func TestLocation(t *testing.T) {
+	script := &Script{Command: "install", Name: "go", Directory: "."}
 
-	if book.command != "install" {
-		t.Errorf("Dude")
+	actual := script.location()
+	if actual != "scripts/go/install" {
+		t.Errorf("%s", actual)
 	}
 }
 
-func TestNoLayout(t *testing.T) {
-	/*
-		currentDir, err := os.Getwd()
+func TestMissing(t *testing.T) {
+	script := &Script{Command: "install", Name: "go", Directory: "."}
 
-		if err != nil {
-			panic(err)
-		}
-	*/
-
-	dir, err := ioutil.TempDir(".", "test_layout")
-
-	if err != nil {
-		panic(err)
+	actual := script.missing()
+	if actual != true {
+		t.Errorf("%s", actual)
 	}
-
-	defer func() {
-		err := os.RemoveAll(dir)
-
-		if err != nil {
-			panic(err)
-		}
-
-		/*
-			err = os.Chdir(dir)
-
-			if err != nil {
-				panic(err)
-			}
-		*/
-	}()
-
-	/*
-		err = os.Chdir(dir)
-
-		if err != nil {
-			panic(err)
-		}
-	*/
-
-	cmd := exec.Command("./drache", "install", "development")
-	output, err := cmd.CombinedOutput()
-
-	if err != nil {
-		panic(err)
-	}
-
-	if strings.Contains(string(output), "OK") != true {
-		t.Errorf("Layout issuei: %s", string(output))
-	}
-
-	// assert exit status
 }

@@ -19,7 +19,7 @@ type Script struct {
 }
 
 func (script *Script) location() string {
-	return path.Join(script.Directory, "recipe", script.Name, script.Command)
+	return path.Join(script.Directory, "scripts", script.Name, script.Command)
 }
 
 func (script *Script) missing() bool {
