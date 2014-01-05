@@ -9,7 +9,6 @@ import (
 )
 
 func main() {
-
 	theCommand := os.Args[1]
 	theDirectory := os.Args[3]
 	theEnvironment := os.Args[2]
@@ -27,8 +26,6 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-
-	fmt.Println(layout)
 
 	status := 0
 

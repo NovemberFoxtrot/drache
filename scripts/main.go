@@ -18,22 +18,36 @@ type Script struct {
 	Status      int
 }
 
-func (script *Script) Run() {
-	scriptPath := path.Join(script.Directory, "recipe", script.Name, script.Command)
+func (script *Script) location() string {
+	return path.Join(script.Directory, "recipe", script.Name, script.Command)
+}
 
-	if _, err := os.Stat(scriptPath); os.IsNotExist(err) {
-		script.Output = "\033[01;33mMISSING\033[00m unable to locate: " + scriptPath
-		script.Status = 1
+func (script *Script) missing() bool {
+	if _, err := os.Stat(script.location()); os.IsNotExist(err) {
+		return true
 	}
 
-	if source, err := ioutil.ReadFile(scriptPath); err != nil {
-		script.Output = "unable to read file: " + scriptPath
-		script.Status = 1
+	return false
+}
+
+func (script *Script) source() string {
+	if source, err := ioutil.ReadFile(script.location()); err != nil {
+		panic(err)
 	} else {
-		out, status := ssh(script.Server, string(source))
-		script.Output = out
-		script.Status = status
+		return string(source)
 	}
+}
+
+func (script *Script) Run() {
+	if script.missing() {
+		script.Output = "\033[01;33mMISSING\033[00m unable to locate: " + script.location()
+		script.Status = 1
+		return
+	}
+
+	out, status := ssh(script.Server, script.source())
+	script.Output = out
+	script.Status = status
 }
 
 func ssh(server, script string) (string, int) {
