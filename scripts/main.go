@@ -14,7 +14,6 @@ type Script struct {
 	Attributes  map[string]interface{}
 	Command     string
 	Directory   string
-	Environment string
 	Output      string
 	Server      string
 	Name        string

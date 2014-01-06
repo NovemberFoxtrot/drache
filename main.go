@@ -19,13 +19,13 @@ func main() {
 		theVerbose = true
 	}
 
+	var layout layouts.Layout
+
 	input, err := layouts.Read(theDirectory)
 
 	if err != nil {
 		panic(err)
 	}
-
-	var layout layouts.Layout
 
 	err = layout.Parse(input)
 
@@ -47,7 +47,6 @@ func main() {
 				Attributes:  layout[theEnvironment].Attributes,
 				Command:     theCommand,
 				Directory:   theDirectory,
-				Environment: theEnvironment,
 				Name:        theScript,
 				Server:      server,
 				Status:      0,
