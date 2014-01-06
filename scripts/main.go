@@ -45,13 +45,17 @@ func (script *Script) Run() {
 		return
 	}
 
-	out, status := ssh(script.Server, script.source())
+	out, status := script.ssh(script.Server, script.source())
 	script.Output = out
 	script.Status = status
 }
 
-func ssh(server, script string) (string, int) {
-	cmd := exec.Command("ssh", "-T", server, script)
+func (script *Script) sshConfigLocation() string {
+	return path.Join(script.Directory, "ssh_config")
+}
+
+func (script *Script) ssh(server, source string) (string, int) {
+	cmd := exec.Command("ssh", "-T", "-F", script.sshConfigLocation(), server, source)
 
 	output, err := cmd.CombinedOutput()
 
