@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/NovemberFoxtrot/remote/layouts"
 	"github.com/NovemberFoxtrot/remote/scripts"
@@ -12,6 +13,11 @@ func main() {
 	theCommand := os.Args[1]
 	theDirectory := os.Args[3]
 	theEnvironment := os.Args[2]
+	theVerbose := false
+
+	if len(os.Args) > 4 && strings.Contains(os.Args[4], "-v") {
+		theVerbose = true
+	}
 
 	input, err := layouts.Read(theDirectory)
 
@@ -45,6 +51,7 @@ func main() {
 				Name:        theScript,
 				Server:      server,
 				Status:      0,
+				Verbose:     theVerbose,
 			}
 
 			script.Run()

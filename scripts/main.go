@@ -19,6 +19,7 @@ type Script struct {
 	Server      string
 	Name        string
 	Status      int
+	Verbose     bool
 }
 
 func (script *Script) location() string {
@@ -75,6 +76,10 @@ func (script *Script) ssh(server, source string) (string, int) {
 	cmd := exec.Command("ssh", "-T", "-F", script.sshConfigLocation(), server, source)
 
 	output, err := cmd.CombinedOutput()
+
+	if script.Verbose == true {
+		fmt.Println(string(output))
+	}
 
 	if err != nil {
 		fmt.Print(err)
