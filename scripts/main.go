@@ -1,14 +1,17 @@
 package scripts
 
 import (
+	"bytes"
 	"fmt"
 	"io/ioutil"
 	"os"
 	"os/exec"
 	"path"
+	"text/template"
 )
 
 type Script struct {
+	Attributes  map[string]interface{}
 	Command     string
 	Directory   string
 	Environment string
@@ -34,7 +37,21 @@ func (script *Script) source() string {
 	if source, err := ioutil.ReadFile(script.location()); err != nil {
 		panic(err)
 	} else {
-		return string(source)
+		tmpl, err := template.New(script.location()).Parse(string(source))
+
+		if err != nil {
+			fmt.Println("parsing: %s", err)
+		}
+
+		b := new(bytes.Buffer)
+
+		err = tmpl.Execute(b, script.Attributes)
+
+		if err != nil {
+			fmt.Println("execution: %s", err)
+		}
+
+		return string(b.String())
 	}
 }
 

@@ -38,6 +38,7 @@ func main() {
 			fmt.Printf(" %s: ", theScript)
 
 			script := &scripts.Script{
+				Attributes:  layout[theEnvironment].Attributes,
 				Command:     theCommand,
 				Directory:   theDirectory,
 				Environment: theEnvironment,
