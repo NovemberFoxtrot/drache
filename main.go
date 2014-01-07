@@ -49,7 +49,6 @@ func main() {
 				Directory:   theDirectory,
 				Name:        theScript,
 				Server:      server,
-				Status:      0,
 				Verbose:     theVerbose,
 			}
 
